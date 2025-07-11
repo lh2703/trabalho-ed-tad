@@ -8,6 +8,8 @@ typedef struct No {
 } No;
 
 typedef int (*FuncaoComparar)(void *, void *);
+typedef void (*FuncaoMostrarChave)(void *);
+typedef void (*FuncaoLiberar)(void *);
 
 typedef struct ABB {
     No *raiz;
@@ -16,10 +18,10 @@ typedef struct ABB {
 
 ABB* criar_ABB(FuncaoComparar comparar);
 void inserir_ABB(ABB *arvore, void *dado);
-void* buscar_ABB(ABB *arvore, void *dado);
-void emOrdem(ABB *arvore, void (*mostrar_dado)(void *));
-void preOrdem(ABB *arvore, void (*mostrar_dado)(void *));
-void posOrdem(ABB *arvore, void (*mostrar_dado)(void *));
-void destruir_ABB(ABB *arvore, void (*liberar_dado)(void *));
+void* remover_ABB(ABB *arvore, void *chave);
+int existe_ABB(ABB *arvore, void *chave);
+void* buscar_ABB(ABB *arvore, void *chave);
+void imprimir_largura(ABB *arvore, FuncaoMostrarChave mostrar_chave);
+void destruir_ABB(ABB *arvore, FuncaoLiberar liberar_dado);
 
 #endif
