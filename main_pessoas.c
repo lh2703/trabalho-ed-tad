@@ -8,95 +8,110 @@ typedef struct {
     int idade;
 } Pessoa;
 
-int comparar_pessoas(void *a, void *b) {
+int comparar_pessoa(void *a, void *b) {
     Pessoa *p1 = (Pessoa *)a;
     Pessoa *p2 = (Pessoa *)b;
     return strcmp(p1->nome, p2->nome);
 }
 
-void mostrar_pessoa(void *dado) {
+void mostrar_chave_pessoa(void *dado) {
     Pessoa *p = (Pessoa *)dado;
-    printf("Nome: %s | Idade: %d\n", p->nome, p->idade);
+    printf("%s ", p->nome);
 }
 
 void liberar_pessoa(void *dado) {
     free(dado);
 }
 
-void limpar_buffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
+void mostrar_pessoa(Pessoa *p) {
+    printf("Nome: %s | Idade: %d\n", p->nome, p->idade);
 }
 
 int main() {
-    ABB *arvore = criar_ABB(comparar_pessoas);
-
+    ABB *arvore = criar_ABB(comparar_pessoa);
     int opcao;
+    char nome[50];
+    Pessoa *p;
+
     do {
-        printf("\nMenu:\n");
-        printf("1 - Inserir pessoa\n");
-        printf("2 - Listar pessoas em ordem\n");
-        printf("3 - Listar pessoas em pre-ordem\n");
-        printf("4 - Listar pessoas em pos-ordem\n");
-        printf("5 - Buscar pessoa por nome\n");
-        printf("6 - Sair\n");
-        printf("Escolha uma opcao: ");
+        printf("\n=== MENU PESSOA ===\n");
+        printf("1 - Inserir Pessoa\n");
+        printf("2 - Remover Pessoa\n");
+        printf("3 - Verificar se Pessoa existe\n");
+        printf("4 - Buscar Pessoa\n");
+        printf("5 - Imprimir em Largura\n");
+        printf("0 - Sair\n");
+        printf("Escolha: ");
         scanf("%d", &opcao);
-        limpar_buffer();
 
-        if (opcao == 1) {
-            Pessoa *p = malloc(sizeof(Pessoa));
-            if (!p) {
-                printf("Erro de alocacao!\n");
-                continue;
-            }
+        switch (opcao) {
+            case 1:
+                p = malloc(sizeof(Pessoa));
+                printf("Nome: ");
+                scanf("%s", p->nome);
+                printf("Idade: ");
+                scanf("%d", &p->idade);
+                inserir_ABB(arvore, p);
+                printf("Inserido!\n");
+                break;
 
-            printf("Digite o nome: ");
-            fgets(p->nome, 50, stdin);
-            p->nome[strcspn(p->nome, "\n")] = '\0'; // remove \n
+            case 2:
+                printf("Nome da Pessoa para remover: ");
+                scanf("%s", nome);
+                p = malloc(sizeof(Pessoa));
+                strcpy(p->nome, nome);
+                Pessoa *removida = remover_ABB(arvore, p);
+                if (removida) {
+                    printf("Removida: ");
+                    mostrar_pessoa(removida);
+                    free(removida);
+                } else {
+                    printf("Pessoa não encontrada.\n");
+                }
+                free(p);
+                break;
 
-            printf("Digite a idade: ");
-            scanf("%d", &p->idade);
-            limpar_buffer();
+            case 3:
+                printf("Nome da Pessoa para verificar: ");
+                scanf("%s", nome);
+                p = malloc(sizeof(Pessoa));
+                strcpy(p->nome, nome);
+                if (existe_ABB(arvore, p))
+                    printf("Existe.\n");
+                else
+                    printf("Não existe.\n");
+                free(p);
+                break;
 
-            inserir_ABB(arvore, p);
-            printf("Pessoa inserida com sucesso.\n");
+            case 4:
+                printf("Nome da Pessoa para buscar: ");
+                scanf("%s", nome);
+                p = malloc(sizeof(Pessoa));
+                strcpy(p->nome, nome);
+                Pessoa *encontrada = buscar_ABB(arvore, p);
+                if (encontrada) {
+                    mostrar_pessoa(encontrada);
+                } else {
+                    printf("Pessoa não encontrada.\n");
+                }
+                free(p);
+                break;
 
-        } else if (opcao == 2) {
-            printf("\nPessoas em ordem:\n");
-            emOrdem(arvore, mostrar_pessoa);
+            case 5:
+                printf("Pessoas em largura: ");
+                imprimir_largura(arvore, mostrar_chave_pessoa);
+                printf("\n");
+                break;
 
-        } else if (opcao == 3) {
-            printf("\nPessoas em pre-ordem:\n");
-            preOrdem(arvore, mostrar_pessoa);
+            case 0:
+                destruir_ABB(arvore, liberar_pessoa);
+                printf("Encerrando...\n");
+                break;
 
-        } else if (opcao == 4) {
-            printf("\nPessoas em pos-ordem:\n");
-            posOrdem(arvore, mostrar_pessoa);
-
-        } else if (opcao == 5) {
-            char nome_busca[50];
-            printf("Digite o nome para buscar: ");
-            fgets(nome_busca, 50, stdin);
-            nome_busca[strcspn(nome_busca, "\n")] = '\0';
-
-            Pessoa chave;
-            strcpy(chave.nome, nome_busca);
-
-            Pessoa *resultado = buscar_ABB(arvore, &chave);
-            if (resultado)
-                printf("Pessoa encontrada: %s (%d anos)\n", resultado->nome, resultado->idade);
-            else
-                printf("Pessoa nao encontrada\n");
-
-        } else if (opcao == 6) {
-            printf("Saindo...\n");
-        } else {
-            printf("Opcao invalida, tente novamente.\n");
+            default:
+                printf("Opção inválida.\n");
         }
+    } while (opcao != 0);
 
-    } while (opcao != 6);
-
-    destruir_ABB(arvore, liberar_pessoa);
     return 0;
 }
