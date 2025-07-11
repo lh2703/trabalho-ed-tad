@@ -8,107 +8,110 @@ typedef struct {
     int ano;
 } Data;
 
-int comparar_datas(void *a, void *b) {
+int comparar_data(void *a, void *b) {
     Data *d1 = (Data *)a;
     Data *d2 = (Data *)b;
-
-    if (d1->ano != d2->ano)
-        return d1->ano - d2->ano;
-    if (d1->mes != d2->mes)
-        return d1->mes - d2->mes;
+    if (d1->ano != d2->ano) return d1->ano - d2->ano;
+    if (d1->mes != d2->mes) return d1->mes - d2->mes;
     return d1->dia - d2->dia;
 }
 
-void mostrar_data(void *dado) {
+void mostrar_chave_data(void *dado) {
     Data *d = (Data *)dado;
-    printf("%02d/%02d/%04d\n", d->dia, d->mes, d->ano);
+    printf("%02d/%02d/%04d ", d->dia, d->mes, d->ano);
 }
 
 void liberar_data(void *dado) {
     free(dado);
 }
 
-void limpar_buffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
+void mostrar_data(Data *d) {
+    printf("Data: %02d/%02d/%04d\n", d->dia, d->mes, d->ano);
 }
 
 int main() {
-    ABB *arvore = criar_ABB(comparar_datas);
+    ABB *arvore = criar_ABB(comparar_data);
     int opcao;
+    Data *d;
 
     do {
-        printf("\nMenu:\n");
-        printf("1 - Inserir data\n");
-        printf("2 - Listar datas em ordem\n");
-        printf("3 - Listar datas em pre-ordem\n");
-        printf("4 - Listar datas em pos-ordem\n");
-        printf("5 - Buscar data\n");
-        printf("6 - Sair\n");
-        printf("Escolha uma opcao: ");
+        printf("\n=== MENU DATA ===\n");
+        printf("1 - Inserir Data\n");
+        printf("2 - Remover Data\n");
+        printf("3 - Verificar se Data existe\n");
+        printf("4 - Buscar Data\n");
+        printf("5 - Imprimir em Largura\n");
+        printf("0 - Sair\n");
+        printf("Escolha: ");
         scanf("%d", &opcao);
-        limpar_buffer();
 
-        if (opcao == 1) {
-            Data *d = malloc(sizeof(Data));
-            if (!d) {
-                printf("Erro de alocacao!\n");
-                continue;
-            }
+        switch (opcao) {
+            case 1:
+                d = malloc(sizeof(Data));
+                printf("Dia: "); scanf("%d", &d->dia);
+                printf("Mes: "); scanf("%d", &d->mes);
+                printf("Ano: "); scanf("%d", &d->ano);
+                inserir_ABB(arvore, d);
+                printf("Inserido!\n");
+                break;
 
-            printf("Digite o dia: ");
-            scanf("%d", &d->dia);
-            limpar_buffer();
+            case 2:
+                d = malloc(sizeof(Data));
+                printf("Dia: "); scanf("%d", &d->dia);
+                printf("Mes: "); scanf("%d", &d->mes);
+                printf("Ano: "); scanf("%d", &d->ano);
+                Data *removida = remover_ABB(arvore, d);
+                if (removida) {
+                    printf("Removida: ");
+                    mostrar_data(removida);
+                    free(removida);
+                } else {
+                    printf("Data não encontrada.\n");
+                }
+                free(d);
+                break;
 
-            printf("Digite o mes: ");
-            scanf("%d", &d->mes);
-            limpar_buffer();
+            case 3:
+                d = malloc(sizeof(Data));
+                printf("Dia: "); scanf("%d", &d->dia);
+                printf("Mes: "); scanf("%d", &d->mes);
+                printf("Ano: "); scanf("%d", &d->ano);
+                if (existe_ABB(arvore, d))
+                    printf("Existe.\n");
+                else
+                    printf("Não existe.\n");
+                free(d);
+                break;
 
-            printf("Digite o ano: ");
-            scanf("%d", &d->ano);
-            limpar_buffer();
+            case 4:
+                d = malloc(sizeof(Data));
+                printf("Dia: "); scanf("%d", &d->dia);
+                printf("Mes: "); scanf("%d", &d->mes);
+                printf("Ano: "); scanf("%d", &d->ano);
+                Data *encontrada = buscar_ABB(arvore, d);
+                if (encontrada) {
+                    mostrar_data(encontrada);
+                } else {
+                    printf("Data não encontrada.\n");
+                }
+                free(d);
+                break;
 
-            inserir_ABB(arvore, d);
-            printf("Data inserida com sucesso.\n");
+            case 5:
+                printf("Datas em largura: ");
+                imprimir_largura(arvore, mostrar_chave_data);
+                printf("\n");
+                break;
 
-        } else if (opcao == 2) {
-            printf("\nDatas em ordem:\n");
-            emOrdem(arvore, mostrar_data);
+            case 0:
+                destruir_ABB(arvore, liberar_data);
+                printf("Encerrando...\n");
+                break;
 
-        } else if (opcao == 3) {
-            printf("\nDatas em pre-ordem:\n");
-            preOrdem(arvore, mostrar_data);
-
-        } else if (opcao == 4) {
-            printf("\nDatas em pos-ordem:\n");
-            posOrdem(arvore, mostrar_data);
-
-        } else if (opcao == 5) {
-            Data chave;
-            printf("Digite o dia para buscar: ");
-            scanf("%d", &chave.dia);
-            limpar_buffer();
-            printf("Digite o mes para buscar: ");
-            scanf("%d", &chave.mes);
-            limpar_buffer();
-            printf("Digite o ano para buscar: ");
-            scanf("%d", &chave.ano);
-            limpar_buffer();
-
-            Data *resultado = buscar_ABB(arvore, &chave);
-            if (resultado)
-                printf("Data encontrada: %02d/%02d/%04d\n", resultado->dia, resultado->mes, resultado->ano);
-            else
-                printf("Data nao encontrada\n");
-
-        } else if (opcao == 6) {
-            printf("Saindo...\n");
-        } else {
-            printf("Opcao invalida, tente novamente.\n");
+            default:
+                printf("Opção inválida.\n");
         }
+    } while (opcao != 0);
 
-    } while (opcao != 6);
-
-    destruir_ABB(arvore, liberar_data);
     return 0;
 }
